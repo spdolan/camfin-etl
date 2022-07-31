@@ -5,7 +5,7 @@ interface NodejsLambdaStackProps extends cdk.StackProps {
   env?: cdk.Environment;
   functionName: string;
   functionEntry: string;
-  functionProps: {[x:string]: any}
+  functionProps: {[x:string]: any};
 }
 
 export class NodejsLambdaStack extends cdk.Stack {

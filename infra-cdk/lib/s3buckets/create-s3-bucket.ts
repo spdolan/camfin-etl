@@ -4,7 +4,6 @@ import * as s3 from "@aws-cdk/aws-s3";
 interface BucketsProps extends cdk.StackProps {
     envName: string;
     bucketName: string;
-    env: cdk.Environment;
 }
 
 export class CreateS3Bucket extends cdk.Stack {

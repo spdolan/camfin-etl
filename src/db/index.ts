@@ -1,5 +1,5 @@
 import {logger} from '../logger';
-import { getAWSSecret } from '../utils/getAWSSecret';
+import { getAWSSecret } from '../getAWSSecret';
 import { EnvironmentsStrings, Environments, GenericObject } from '../types';
 /*
   pg-promise requires the esModuleInterop flag to be set = true

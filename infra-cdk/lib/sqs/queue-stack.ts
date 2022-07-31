@@ -5,7 +5,6 @@ import * as sqs from '@aws-cdk/aws-sqs';
 const DEFAULT_QUEUE_TIMEOUT = 60 * 5
 
 interface QueueStackProps extends cdk.StackProps {
-  env?: cdk.Environment;
   queueName: string;
   queueTimeout?: cdk.Duration;
   needsDLQ?: boolean;
@@ -14,7 +13,7 @@ interface QueueStackProps extends cdk.StackProps {
 export class BasicQueueStack extends cdk.Stack {
   public readonly queue: sqs.Queue
   public readonly queueURL: string
-  public readonly deadLetterQueue: sqs.Queue
+  public readonly deadLetterQueue: sqs.Queue | null = null
 
     constructor(scope: cdk.Construct, id: string, props: QueueStackProps) {
         super(scope, id, props);

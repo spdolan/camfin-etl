@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 
 // init params, for reuse outside of Lambda execution
 const { STATE_MACHINE_ARN } = process.env
-const sfnClient = new SFNClient();
+const sfnClient = new SFNClient({});
 
 export const handler = async (event: any, context: any) => {
   const batchId = context.awsRequestId

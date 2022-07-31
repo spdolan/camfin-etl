@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 
 // init params, for reuse outside of Lambda execution
 const { S3_BUCKET_URL } = process.env
-const s3Client = new S3Client();
+const s3Client = new S3Client({});
 
 export const handler = async (event: any, context: any) => {
   const batchId = context.awsRequestId

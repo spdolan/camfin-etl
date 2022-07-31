@@ -5,6 +5,7 @@
 !/package.json
 !/LICENSE
 !/.npmignore
+yarn-error.log
 
 node_modules/
 jspm_packages/

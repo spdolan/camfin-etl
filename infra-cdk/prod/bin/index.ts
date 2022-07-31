@@ -1,5 +1,5 @@
 import * as cdk from "@aws-cdk/core";
-import { TEST as envName } from "../../lib/constants";
+import { PROD as envName } from "../../lib/constants";
 import {StartFileETLStack} from '../../lib/file-etl/create-start-file-etl-stack'
 
 // Stack name prefix, based on envName

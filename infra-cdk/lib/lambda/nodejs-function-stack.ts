@@ -14,7 +14,7 @@ export class NodejsLambdaStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props: NodejsLambdaStackProps) {
         super(scope, id, props);
 
-      const { functionName, functionEntry, functionProps: {timeout, memorySize, vpc, define} } = props;
+      const { functionName, functionEntry, functionProps: {timeout, memorySize, vpc, define, environment} } = props;
       this.lambda = new lambda.NodejsFunction(this, `${functionName}Lambda`, {
         entry: functionEntry, // accepts .js, .jsx, .ts and .tsx files
         // handler: 'handler', // defaults to 'handler'
@@ -26,7 +26,8 @@ export class NodejsLambdaStack extends cdk.Stack {
         },
         timeout,
         memorySize, // default is 128 MB
-        vpc
+        vpc,
+        environment
       });
     }
 }

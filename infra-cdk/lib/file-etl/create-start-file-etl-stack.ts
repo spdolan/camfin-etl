@@ -31,7 +31,7 @@ export class StartFileETLStack extends cdk.Stack {
       functionProps: {
         timeout: cdk.Duration.seconds(45),
         environment: {
-          ['process.env.STATE_MACHINE_ARN']: JSON.stringify(etlStateMachine.stateMachineArn),
+          STATE_MACHINE_ARN: etlStateMachine.stateMachineArn
         }
       }
     })

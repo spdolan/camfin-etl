@@ -47,8 +47,9 @@ export class FileETLStack extends cdk.Stack {
       functionEntry: path.join(__dirname, `/../../../src/lambda-fns/downloadFile/index.ts`),
       functionProps: {
         timeout: cdk.Duration.seconds(45),
+        memorySize: 256,
         environment: {
-          ['process.env.S3_BUCKET_URL']: JSON.stringify(fileETLS3Bucket.bucketWebsiteUrl),
+          S3_BUCKET_NAME: JSON.stringify(fileETLS3Bucket.bucketName),
         }
       }
     })
@@ -64,7 +65,7 @@ export class FileETLStack extends cdk.Stack {
       functionProps: {
         timeout: cdk.Duration.seconds(45),
         environment: {
-          ['process.env.S3_BUCKET_URL']: JSON.stringify(fileETLS3Bucket.bucketWebsiteUrl),
+          S3_BUCKET_NAME: JSON.stringify(fileETLS3Bucket.bucketName),
         }
       }
     })
@@ -80,7 +81,7 @@ export class FileETLStack extends cdk.Stack {
       functionProps: {
         timeout: cdk.Duration.seconds(45),
         environment: {
-          ['process.env.S3_BUCKET_URL']: JSON.stringify(fileETLS3Bucket.bucketWebsiteUrl),
+          S3_BUCKET_NAME: JSON.stringify(fileETLS3Bucket.bucketName),
         }
       }
     })
@@ -97,9 +98,9 @@ export class FileETLStack extends cdk.Stack {
       functionProps: {
         timeout: cdk.Duration.seconds(45),
         environment: {
-          ['process.env.S3_BUCKET_URL']: JSON.stringify(fileETLS3Bucket.bucketWebsiteUrl),
-          ['process.env.QUEUE_URL']: JSON.stringify(sanitizedDataQueue.queueUrl.toString()),
-          ['process.env.DLQ_URL']: JSON.stringify(dlqUrl),
+          S3_BUCKET_NAME: JSON.stringify(fileETLS3Bucket.bucketName),
+          QUEUE_URL: JSON.stringify(sanitizedDataQueue.queueUrl.toString()),
+          DLQ_URL: JSON.stringify(dlqUrl),
         }
       }
     })
@@ -127,24 +128,36 @@ export class FileETLStack extends cdk.Stack {
     // Run Download File Lambda
     const runDownloadFileETLLambda = new tasks.LambdaInvoke(this, `RunTaskDownloadTargetFileLambda-${environmentName}`, {
       lambdaFunction: downloadFileETLLambda,
-      resultPath: '$.Payload'
+      resultPath: '$.dailyFileS3URL',
+      resultSelector: {
+        lambdaOutput: sfn.JsonPath.stringAt('$.Payload')
+      }
     })
     // .addRetry({maxAttempts: MAX_RETRY_ATTEMPTS, backoffRate: RETRY_BACKOFF_RATE})
     
     // Run Unzip File Lambda
     const runUnzipFileETLLambda = new tasks.LambdaInvoke(this, `RunTaskUnzipTargetFileLambda-${environmentName}`, {
       lambdaFunction: unzipFileETLLambda,
-      resultPath: '$.Payload'
+      resultPath: '$.unzippedFileS3URL',
+      resultSelector: {
+        lambdaOutput: sfn.JsonPath.stringAt('$.Payload')
+      }
     })
     // Run Sanitize File Lambda
     const runSanitizeFileETLLambda = new tasks.LambdaInvoke(this, `RunTaskSanitizeTargetFileLambda-${environmentName}`, {
       lambdaFunction: sanitizeFileETLLambda,
-      resultPath: '$.Payload'
+      resultPath: '$.sanitizedFileS3URL',
+      resultSelector: {
+        lambdaOutput: sfn.JsonPath.stringAt('$.Payload')
+      }
     })
     // Run Parse File Lambda
     const runParseSanitizedFileETLLambda = new tasks.LambdaInvoke(this, `RunTaskParseSanitizedTargetFileLambda-${environmentName}`, {
       lambdaFunction: parseSanitizedFileETLLambda,
-      resultPath: '$.Payload'
+      resultPath: '$.Payload',
+      resultSelector: {
+        lambdaOutput: sfn.JsonPath.stringAt('$.Payload')
+      }
     })
 
     // end states
@@ -157,17 +170,17 @@ export class FileETLStack extends cdk.Stack {
     const dailyFileIsNotPresentChoice = new sfn.Choice(this, `FileIsNotPresent-${environmentName}`, {
       comment: 'checks output for daily S3 URL value.',
     })
-    const dailyFileIsNotPresentCondition = sfn.Condition.isNotPresent(`$.dailyFileS3URL`)
+    const dailyFileIsNotPresentCondition = sfn.Condition.isNotPresent(`$.dailyFileS3URL.lambdaOutput`)
     // Unzipped file present Choice and Condition
     const unzippedFileIsNotPresentChoice = new sfn.Choice(this, `UnzippedFileNotPresent-${environmentName}`, {
       comment: 'checks output for unzipped S3 URL value.',
     })
-    const unzippedFileIsNotPresentCondition = sfn.Condition.isNotPresent(`$.unzippedFileS3URL`)
+    const unzippedFileIsNotPresentCondition = sfn.Condition.isNotPresent(`$.unzippedFileS3URL.lambdaOutput`)
     // Sanitized file present Choice and Condition
     const sanitizedFileIsNotPresentChoice = new sfn.Choice(this, `SanitizedFileNotPresent-${environmentName}`, {
       comment: 'checks output for sanitized S3 URL value.',
     })
-    const sanitizedFileIsNotPresentCondition = sfn.Condition.isNotPresent(`$.sanitizedFileS3URL`)
+    const sanitizedFileIsNotPresentCondition = sfn.Condition.isNotPresent(`$.sanitizedFileS3URL.lambdaOutput`)
     
     
     const fileETLStepFunctionDefinition =

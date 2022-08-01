@@ -66,8 +66,9 @@ export class Extractor {
   }
 
   _buildTempFileDestination = (filename: string, filePrefix = null) => {
+    logger.debug(`Extractor._buildTempFileDestination prefix: ${filePrefix}`)
     const timestamp = this._getTimestamp()
-    const prefix = filePrefix || timestamp
+    const prefix = timestamp
     const prefixedFilename = `${prefix}_${filename}`
     return path.join(this._getTempDirectory(), prefixedFilename)
   }
@@ -117,6 +118,9 @@ export class Extractor {
         await this._writeStreamToFile(response.data, writeFileDestination)
         response.data.on('end', () => {
           logger.debug('streaming complete!')
+        })
+        response.data.on('error', (error: any) => {
+          logger.error(error)
         })
       })
 
@@ -282,6 +286,10 @@ export class Extractor {
       logger.info(targetFilepath, success)
       const s3Key = this._extractFileNameFromURL(targetFilepath)
       logger.info(s3Key)
+
+      // fs.readdirSync(this._getTempDirectory()).forEach(file => {
+      //   logger.info(`temp dir file: ${file}`);
+      // });
       if(success){
         logger.info(`Extractor._downloadTargetFile succeeded for file ${s3Key}, proceeding with upload.`)
         const result = await this._sendFileToS3(targetFilepath, s3Key ,this._s3BucketName)
